@@ -32,7 +32,6 @@ public:
 		//create_window();	
 	}
 
-
 	gl_player(int width,int height,bool vsync) {
 		glfwInit();
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

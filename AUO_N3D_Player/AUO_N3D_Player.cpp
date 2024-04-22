@@ -5,9 +5,12 @@
 #include "./GL_player.h"
 #include "./cuda_test.cuh" 
 
+#define VSYNC_ON 1
+
 int main()
 {
     bool IsFullScreen = true;
+    
 	/*CUDA TEST
     double A[3], B[3], C[3];
 
@@ -25,7 +28,7 @@ int main()
    //const int video_id1 =video_decoder.add_video_by_path("sample_2.mp4");
    //video_decoder.parse(video_id1);
    //video_decoder. show_video_list();
-    gl_player my_player(true);
+    gl_player my_player(VSYNC_ON);
     my_player.load_video("sample_2.mp4");
     my_player.create_window();
 

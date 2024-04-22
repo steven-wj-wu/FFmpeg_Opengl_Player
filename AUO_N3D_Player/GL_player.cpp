@@ -119,6 +119,7 @@ void gl_player::create_window() {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
+
         tmp = gl_decoder.get_current_frame_data();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 640, 360, 0, GL_RGB, GL_UNSIGNED_BYTE, tmp);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -138,6 +139,8 @@ void gl_player::create_window() {
 
 }
 
+
+
 void gl_player::load_video(std::string video_path){
     const int video_id1 =gl_decoder.add_video_by_path(video_path);
     //video_decoder.parse(video_id1);
@@ -148,18 +151,6 @@ void gl_player::load_video(std::string video_path){
 
 
 //¢Þ¢à¢×¢ä¢Ï¢â¢Ó¡@¢Ô¢ã¢Ü¢Ñ¢â¢×¢Ý¢Ü
-
-void glfw_initial() {
-
-
-
-}
-
-void create_gl_window() {
-
-
-
-}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
  
