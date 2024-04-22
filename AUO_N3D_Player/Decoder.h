@@ -90,6 +90,7 @@ public :
     void delete_video_by_id(int id);
     void show_video_list();
     void parse(int video_id);
+    void free_buffer(int video_id);
     uint8_t* get_current_frame_data( );
 
     int test_num = 0;

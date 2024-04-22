@@ -8,7 +8,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 
 //¢Þ¢ã¢Ð¢Ú¢×¢Ñ¡@¢Ô¢ã¢Ü¢Ñ¢â¢×¢Ý¢Ü
-void gl_player::create_window() {
+void gl_player::play() {
+
+    if (current_video_id == -1) {
+        printf("No Video in Parsing...\n");
+        return;
+    }
 
     GLFWwindow* window = glfwCreateWindow(window_width, window_height, "CLG Player", glfwGetPrimaryMonitor(), NULL);
     //GLFWwindow* window = glfwCreateWindow(width, height, "CLG Player", NULL, NULL);
@@ -139,8 +144,6 @@ void gl_player::create_window() {
 
 }
 
-
-
 void gl_player::load_video(std::string video_path){
     const int video_id1 =gl_decoder.add_video_by_path(video_path);
     //video_decoder.parse(video_id1);
@@ -149,7 +152,17 @@ void gl_player::load_video(std::string video_path){
     gl_decoder.parse(current_video_id);
 }
 
+void gl_player::end() {
+    if (current_video_id != -1) {
+        gl_decoder.free_buffer(current_video_id);
+        current_video_id = -1;       
+    }
+    else {
+        printf("No Video to End.. \n");
+    }
 
+
+}
 //¢Þ¢à¢×¢ä¢Ï¢â¢Ó¡@¢Ô¢ã¢Ü¢Ñ¢â¢×¢Ý¢Ü
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {

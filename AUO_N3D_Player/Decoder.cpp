@@ -1,5 +1,7 @@
 #include "Decoder.h"
-
+#define Frame_Buffer_State_Extract 0
+#define Frame_Buffer_State_Transform 1
+#define Frame_Buffer_State_Read 2
 
 //PUBLIC  FUNCTION------------------------------------
 
@@ -146,6 +148,24 @@ void Decoder::parse(int video_id) {
     transfer.detach();
 }
 
+
+void Decoder::free_buffer(int video_id) {
+
+    VideoList* current = VideoListHead;
+    while (current != nullptr) {
+        if (current->idx == video_id)
+            break;
+        current = current->next;
+    }
+    if (current != nullptr) {
+        ClearVideoBuffer(current);
+    }
+    else {
+        printf("Free Buffer Failed: No video id exisit\n");
+    }
+   
+}
+
 uint8_t* Decoder::get_current_frame_data( ) {
 
         if (current_buffer == nullptr) {
@@ -153,9 +173,9 @@ uint8_t* Decoder::get_current_frame_data( ) {
             return nullptr;
         }
         else {      
-            if (current_buffer->current_state == 2) {
+            if (current_buffer->current_state == Frame_Buffer_State_Read) {
                 current_frame_data = current_buffer->frame_buffer->data[0];
-                current_buffer->current_state = 0;
+                current_buffer->current_state = Frame_Buffer_State_Extract;
                 current_buffer = current_buffer->next_buffer;
                 return current_frame_data;
            }
@@ -191,7 +211,7 @@ void Decoder::ReadBufferThread(VideoData *data) {
 
                 while (1) {
                     //add replay here 
-                    if (ptr->current_state==0) {//not read buffer yet
+                    if (ptr->current_state== Frame_Buffer_State_Extract) {//not read buffer yet
 
                         if (!(av_read_frame(data->fmt_ctx, data->packet) >= 0)) {
                             printf("read frame failed \n");
@@ -205,7 +225,7 @@ void Decoder::ReadBufferThread(VideoData *data) {
                                 break;
                             }
                             if (!(avcodec_receive_frame(data->codec_ctx, ptr->codec_buffer) < 0)) {
-                                ptr->current_state = 1;
+                                ptr->current_state = Frame_Buffer_State_Transform;
                                 ptr = ptr->next_buffer;
                             }
                         }
@@ -239,7 +259,7 @@ void Decoder::TransferDataToRGBThread(VideoData* data) {
             break;
         }
 
-        if (ptr->current_state==1) {
+        if (ptr->current_state== Frame_Buffer_State_Transform) {
 
             if ((ret = av_hwframe_transfer_data(ptr->tmp_frame_nv12, ptr->codec_buffer, 0)) < 0) {
                 fprintf(stderr, "Error transferring the data to system memory\n");
@@ -248,7 +268,7 @@ void Decoder::TransferDataToRGBThread(VideoData* data) {
             //Trans fer Nv12 to Yuv
             sws_scale(data->conv_ctx_yuv, ptr->tmp_frame_nv12->data, ptr->tmp_frame_nv12->linesize, 0, data->codec_ctx->height, ptr->tmp_frame_yuv->data, ptr->tmp_frame_yuv->linesize);
             sws_scale(data->conv_ctx, ptr->tmp_frame_yuv->data, ptr->tmp_frame_yuv->linesize, 0, data->codec_ctx->height, ptr->frame_buffer->data, ptr->frame_buffer->linesize);
-            ptr->current_state = 2;
+            ptr->current_state = Frame_Buffer_State_Read;
             ptr = ptr->next_buffer;
         }
 
@@ -306,6 +326,19 @@ void Decoder::clearVideoData(VideoData* data) {
     if (data->packet != nullptr) av_free(data->packet);
     if (data->codec_ctx != nullptr) avcodec_close(data->codec_ctx);
    if (data->fmt_ctx != nullptr) avformat_free_context(data->fmt_ctx);
+   ReadBuffer* delete_node = data->ReadBufferHead;
+   while (delete_node !=nullptr) {
+          ReadBuffer* next_node = delete_node->next_buffer;
+          av_frame_free(&delete_node->codec_buffer);
+          av_frame_free(&delete_node->frame_buffer);
+          av_frame_free(&delete_node->tmp_frame_nv12);
+          av_frame_free(&delete_node->tmp_frame_yuv);
+          free(delete_node->internal_buffer);
+          free(delete_node->internal_buffer_yuv);
+          free(delete_node);
+          delete_node = next_node;
+   }
+
 }
 
 bool Decoder::set_decoder(VideoData* data) {

@@ -30,7 +30,9 @@ int main()
    //video_decoder. show_video_list();
     gl_player my_player(VSYNC_ON);
     my_player.load_video("sample_2.mp4");
-    my_player.create_window();
+    my_player.play();
+    my_player.end();
+
 
    //system("pause");
    //video_decoder.delete_video_by_id(5);

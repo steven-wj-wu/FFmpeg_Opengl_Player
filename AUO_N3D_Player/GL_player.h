@@ -50,7 +50,7 @@ public:
 
 		void load_video(std::string video_path);
 		void play();
-		void create_window();
+		void end();
 		
 
 private:
